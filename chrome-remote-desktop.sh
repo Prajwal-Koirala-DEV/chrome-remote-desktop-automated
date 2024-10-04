@@ -152,32 +152,46 @@ function check-disk-space() {
 # The check-disk-space function is being called.
 check-disk-space
 
-# Function to start installing chrome remote desktop
+# Define a function named 'install-chrome-remote-desktop'.
 function install-chrome-remote-desktop() {
-    # Check if chrome-remote-desktop is already installed on the system.
+    # Check if chrome-remote-desktop is not installed by verifying if the command exists.
+    # The '-x' checks if the file is executable, and the 'command -v' checks if it's in the PATH.
     if [ ! -x "$(command -v chrome-remote-desktop)" ]; then
+        # Download Google's signing key and add it to the system's trusted GPG keys.
         curl -s https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/chrome-remote-desktop.gpg
+        # Add the Chrome Remote Desktop repository to the system's list of package sources.
         echo "deb [arch=$(dpkg --print-architecture)] https://dl.google.com/linux/chrome-remote-desktop/deb stable main" | sudo tee /etc/apt/sources.list.d/chrome-remote-desktop.list
+        # Update the package list to include the newly added repository.
         apt-get update
+        # Set the DEBIAN_FRONTEND variable to 'noninteractive' to avoid prompts during installation.
         export DEBIAN_FRONTEND=noninteractive
+        # Install Chrome Remote Desktop without asking for user confirmation (assume "yes" for prompts).
         apt-get install --assume-yes chrome-remote-desktop
     fi
 }
 
-# Start installing chrome remote desktop.
+# Call the function to start installing Chrome Remote Desktop.
 install-chrome-remote-desktop
 
-# Install XFCE
+# Define a function named 'install-xdce-environment' to install the XFCE environment and related components.
 function install-xdce-environment() {
+    # Check if chrome-remote-desktop is not installed (the environment setup is dependent on this).
     if [ ! -x "$(command -v chrome-remote-desktop)" ]; then
+        # Set the DEBIAN_FRONTEND variable to 'noninteractive' to avoid user prompts during installation.
         export DEBIAN_FRONTEND=noninteractive
+        # Install the XFCE desktop environment along with some essential components.
+        # xfce4: XFCE desktop, desktop-base: default themes, dbus-x11: DBus for X, xscreensaver: screen saver.
         apt-get install --assume-yes xfce4 desktop-base dbus-x11 xscreensaver
+        # Write a configuration to ensure Chrome Remote Desktop uses the XFCE desktop session.
         sudo bash -c 'echo "exec /etc/X11/Xsession /usr/bin/xfce4-session" > /etc/chrome-remote-desktop-session'
+        # Disable the LightDM display manager service as it isn't needed for remote desktop usage.
         systemctl disable lightdm.service
+        # Install the task package for a full XFCE desktop experience.
         apt-get install --assume-yes task-xfce-desktop
+        # Download Google Chrome's latest stable version, then install it while fixing any dependency issues.
         curl -L -o google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && sudo apt install --assume-yes --fix-broken ./google-chrome-stable_current_amd64.deb
     fi
 }
 
-# Install the required enviroment.
+# Call the function to install the XFCE environment and related components.
 install-xdce-environment
