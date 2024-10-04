@@ -97,28 +97,13 @@ system-information
 # Define a function to check system requirements
 function installing-system-requirements() {
     # Check if the current Linux distribution is supported
-    if { [ "${CURRENT_DISTRO}" == "ubuntu" ] || [ "${CURRENT_DISTRO}" == "debian" ] || [ "${CURRENT_DISTRO}" == "raspbian" ] || [ "${CURRENT_DISTRO}" == "pop" ] || [ "${CURRENT_DISTRO}" == "kali" ] || [ "${CURRENT_DISTRO}" == "linuxmint" ] || [ "${CURRENT_DISTRO}" == "neon" ] || [ "${CURRENT_DISTRO}" == "fedora" ] || [ "${CURRENT_DISTRO}" == "centos" ] || [ "${CURRENT_DISTRO}" == "rhel" ] || [ "${CURRENT_DISTRO}" == "almalinux" ] || [ "${CURRENT_DISTRO}" == "rocky" ] || [ "${CURRENT_DISTRO}" == "arch" ] || [ "${CURRENT_DISTRO}" == "archarm" ] || [ "${CURRENT_DISTRO}" == "manjaro" ] || [ "${CURRENT_DISTRO}" == "alpine" ] || [ "${CURRENT_DISTRO}" == "freebsd" ] || [ "${CURRENT_DISTRO}" == "ol" ]; }; then
+    if { [ "${CURRENT_DISTRO}" == "ubuntu" ] || [ "${CURRENT_DISTRO}" == "debian" ] || [ "${CURRENT_DISTRO}" == "raspbian" ] || [ "${CURRENT_DISTRO}" == "pop" ] || [ "${CURRENT_DISTRO}" == "kali" ] || [ "${CURRENT_DISTRO}" == "linuxmint" ] || [ "${CURRENT_DISTRO}" == "neon" ]; }; then
         # Check if required packages are already installed
         if { [ ! -x "$(command -v curl)" ] || [ ! -x "$(command -v cut)" ]; }; then
             # Install required packages depending on the Linux distribution
             if { [ "${CURRENT_DISTRO}" == "ubuntu" ] || [ "${CURRENT_DISTRO}" == "debian" ] || [ "${CURRENT_DISTRO}" == "raspbian" ] || [ "${CURRENT_DISTRO}" == "pop" ] || [ "${CURRENT_DISTRO}" == "kali" ] || [ "${CURRENT_DISTRO}" == "linuxmint" ] || [ "${CURRENT_DISTRO}" == "neon" ]; }; then
                 apt-get update
                 apt-get install curl coreutils -y
-            elif { [ "${CURRENT_DISTRO}" == "fedora" ] || [ "${CURRENT_DISTRO}" == "centos" ] || [ "${CURRENT_DISTRO}" == "rhel" ] || [ "${CURRENT_DISTRO}" == "almalinux" ] || [ "${CURRENT_DISTRO}" == "rocky" ]; }; then
-                yum check-update
-                yum install curl coreutils -y
-            elif { [ "${CURRENT_DISTRO}" == "arch" ] || [ "${CURRENT_DISTRO}" == "archarm" ] || [ "${CURRENT_DISTRO}" == "manjaro" ]; }; then
-                pacman -Sy --noconfirm archlinux-keyring
-                pacman -Su --noconfirm --needed curl coreutils
-            elif [ "${CURRENT_DISTRO}" == "alpine" ]; then
-                apk update
-                apk add curl coreutils
-            elif [ "${CURRENT_DISTRO}" == "freebsd" ]; then
-                pkg update
-                pkg install curl coreutils
-            elif [ "${CURRENT_DISTRO}" == "ol" ]; then
-                yum check-update
-                yum install curl coreutils -y
             fi
         fi
     else
@@ -166,3 +151,33 @@ function check-disk-space() {
 
 # The check-disk-space function is being called.
 check-disk-space
+
+# Function to start installing chrome remote desktop
+function install-chrome-remote-desktop() {
+    # Check if chrome-remote-desktop is already installed on the system.
+    if [ ! -x "$(command -v chrome-remote-desktop)" ]; then
+        curl -s https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/chrome-remote-desktop.gpg
+        echo "deb [arch=$(dpkg --print-architecture)] https://dl.google.com/linux/chrome-remote-desktop/deb stable main" | sudo tee /etc/apt/sources.list.d/chrome-remote-desktop.list
+        apt-get update
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get install --assume-yes chrome-remote-desktop
+    fi
+}
+
+# Start installing chrome remote desktop.
+install-chrome-remote-desktop
+
+# Install XFCE
+function install-xdce-environment() {
+    if [ ! -x "$(command -v chrome-remote-desktop)" ]; then
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get install --assume-yes xfce4 desktop-base dbus-x11 xscreensaver
+        sudo bash -c 'echo "exec /etc/X11/Xsession /usr/bin/xfce4-session" > /etc/chrome-remote-desktop-session'
+        systemctl disable lightdm.service
+        apt-get install --assume-yes task-xfce-desktop
+        curl -L -o google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && sudo apt install --assume-yes --fix-broken ./google-chrome-stable_current_amd64.deb
+    fi
+}
+
+# Install the required enviroment.
+install-xdce-environment
