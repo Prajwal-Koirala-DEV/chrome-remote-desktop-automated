@@ -16,7 +16,7 @@
 # 2. Downloading the Script:
 #    Use the following command to download the script:
 #    ```bash
-#    curl -o /usr/local/bin/chrome-remote-desktop.sh https://raw.githubusercontent.com/yourusername/chrome-remote-desktop-automated/main/chrome-remote-desktop.sh
+#    curl -o /usr/local/bin/chrome-remote-desktop.sh https://raw.githubusercontent.com/Prajwal-Koirala-DEV/chrome-remote-desktop-automated/refs/heads/main/chrome-remote-desktop.sh
 #    ```
 
 # 3. Making the Script Executable:
